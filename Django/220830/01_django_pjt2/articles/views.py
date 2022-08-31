@@ -3,7 +3,7 @@ import random
 
 # Create your views here.
 def index(request):
-    return render(request, 'index.html')
+    return render(request, 'articles/index.html')
 
 def greeting(request):
     names = ['Eunkyung', 'Hyoungkyu']
@@ -15,7 +15,7 @@ def greeting(request):
         'names': names,
         'info' : info,
     }
-    return render(request, 'greeting.html', context)
+    return render(request, 'articles/greeting.html', context)
 
 def dinner(request):
     foods = ['파스타', '스테이크', '스시', '불고기']
@@ -24,10 +24,10 @@ def dinner(request):
         'pick':pick,
         'foods':foods,
     }
-    return render(request, 'dinner.html', context)
+    return render(request, 'articles/dinner.html', context)
 
 def throw(request):
-    return render(request, 'throw.html')
+    return render(request, 'articles/throw.html')
 
 def catch(request):
     message = request.GET.get('message')
@@ -35,16 +35,16 @@ def catch(request):
     context = {
         'message': message,
     }
-    return render(request, 'catch.html', context)
+    return render(request, 'articles/catch.html', context)
 
 def hello(request, name):
     context = {
         'name' : name,
     }
-    return render(request, 'hello.html', context)
+    return render(request, 'articles/hello.html', context)
 
 def num(request, num):
     context = {
         'num' : num,
     }
-    return render(request, 'num.html', context)
+    return render(request, 'articles/num.html', context)

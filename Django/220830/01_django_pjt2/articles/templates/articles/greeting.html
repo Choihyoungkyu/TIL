@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <p>{{ names|join:", "}}</p>
+  <a href="{% url 'articles:index' %}">뒤로</a>
+{% endblock content %}
