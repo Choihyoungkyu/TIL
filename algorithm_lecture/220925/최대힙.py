@@ -1,3 +1,4 @@
+# 최대힙
 
 def enq(n):
     global last
@@ -7,7 +8,7 @@ def enq(n):
     p = c // 2
     while p and heap[p] < heap[c]:
         heap[p], heap[c] = heap[c], heap[p]
-        c =  p
+        c = p
         p = c // 2
 
 def deq():
@@ -16,8 +17,8 @@ def deq():
     heap[1] = heap[last]
     last -= 1
     p = 1
-    c = 2 * p
-    while c <= last
+    c = p * 2
+    while c <= last:
         if c+1 <= last and heap[c] < heap[c+1]:
             c += 1
         if heap[p] < heap[c]:
@@ -27,3 +28,13 @@ def deq():
         else:
             break
     return tmp
+
+heap = [0] * 100
+last = 0
+for i in range(1, 11):
+    enq(i)
+for i in range(1, last+1):
+    print(heap[i], end=' ')
+print()
+while last:
+    print(deq())
