@@ -23,10 +23,14 @@ def prim2(r, V):
         minV = 10000
         for i in range(V+1):    # MST에 포함된 정점i와 인접한 정점j 중 MST에 포함되지 않고 가중치가 최소인 정점 u찾기
             if MST[i] == 1:
-                for j in range(V+1):
+                for j in range(V+1):      # 인접행렬을 이용한 Prim
                     if adjM[i][j] > 0 and MST[j] == 0 and minV > adjM[i][j]:
                         u = j
                         minV = adjM[i][j]
+                # for j, w in adjL[i]:  # 인접리스트를 이용한 Prim
+                #     if MST[j] == 0 and minV > w:
+                #         u = j
+                #         minV = w
         s += minV
         MST[u] = 1
     return s
