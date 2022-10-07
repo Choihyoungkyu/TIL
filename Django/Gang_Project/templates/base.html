@@ -9,10 +9,10 @@
 <body>
   <div class="container">
     {% if request.user.is_authenticated %}
-      <a href="{% url 'accounts:logout' %}" method="POST">
+      <form action="{% url 'accounts:logout' %}" method="POST">
         {% csrf_token %}
-        로그아웃
-      </a>
+        <input type="submit" value="로그아웃">
+      </form>
       <form action="{% url 'accounts:delete' %}" method="POST">
         {% csrf_token %}
         <input type="submit" value="회원탈퇴">
