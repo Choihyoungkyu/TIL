@@ -638,6 +638,104 @@ return redirect('accounts:login')
 
 
 
+#### 최종 코드
+
+- HTML 코드
+
+```html
+<!-- articles/index.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Articles</h1>
+  {% if request.user.is_authenticated %}
+	<a href="{% url 'articles:create' %}">CREATE</a>
+  {% endif %}
+  <hr>
+  {% for article in articles %}
+  <p>
+    <b>작성자 : <a href="{% url 'accounts:profile' article.user %}">{{ article.user }}</a></b>
+  </p>
+  <p>글 번호 : {{ article.pk }}</p>
+  <p>제목 : {{ article.title }}</p>
+  <p>내용 : {{ article.content }}</p>
+  <div>
+    <form class="like-forms" data-article-id="{{ article.pk }}">
+      {% csrf_token %}
+      {% if request.user in article.like_users.all %}
+        <input type="submit" value="좋아요 취소" id="like-{{ article.pk }}">
+      {% else %}
+        <input type="submit" value="좋아요" id="like-{{ article.pk }}">
+      {% endif %}
+    </form>
+  </div>
+  <a href="{% url 'articles:detail' article.pk %}">상세 페이지</a>
+  <hr>
+  {% endfor %}
+{% endblock content %}
+```
+
+- Python 코드
+
+```python
+# articles/views.py
+from django.http import JsonResponse
+
+@require_POST
+def likes(request, article_pk):
+    if request.user.is_authenticated:
+        article = Article.objects.get(pk=article_pk)
+        
+        if article.like_users.filter(pk=request.user.pk).exists():
+            article.like_users.remove(request.user)
+            is_liked = False
+        else:
+            article.like_users.add(request.user)
+            is_liked = True
+        context = {
+            'is_liked': is_liked,
+        }
+        return JsonResponse(context)
+    return redirect('accounts:login')
+```
+
+- JavaScript 코드
+
+```html
+<!-- articles/index.html -->
+
+const forms = document.querySelectorAll('.like-forms')
+const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value
+
+forms.forEach((form) => {
+  form.addEventListener('submit', function (event) {
+    event.preventDefault()
+    const articleId = event.target.dataset.articleId
+	
+	axios({
+	  method: 'post',
+	  url: `http://127.0.0.1:8000/articles/${articleId}/likes/`,
+	  headers: {'X-CSRFToken': csrftoken}
+	})
+	.then((response) => {
+	  const isLiked = response.data.is_liked
+	  const likeBtn = document.querySelector(`#like-${articleId}`)
+	  if (isLiked === true) {
+		likeBtn.value = '좋아요 취소'
+	  } else {
+		likeBtn.value = '좋아요'
+	  }
+	})
+	.catch((error) => {
+	  console.log(error.response)
+    })
+  })
+})
+```
+
+
+
 
 
 

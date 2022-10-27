@@ -17,10 +17,10 @@
       <form id="like-forms" data-article-id = "{{ article.pk }}" class='d-flex flex-row'>
         {% csrf_token %}
         {% if request.user in article.like_users.all %}
-          <button type="submit" class="btn btn p-0" id="like-{{article.pk}}"><i class="fa-solid fa-heart btn" style="color: red;"></i></button>
+          <button type="submit" class="btn btn p-0" id="like-{{article.pk}}"><i id="Like-{{article.pk}}" class="fa-solid fa-heart btn" style="color: red;"></i></button>
           <!-- <input type="submit" value="좋아요 취소" id="like-{{article.pk}}"> -->
           {% else %}
-          <button type="submit" class="btn btn m-0" id="like-{{article.pk}}"><i class="fa-regular fa-heart"></i></button>
+          <button type="submit" class="btn btn m-0" id="like-{{article.pk}}"><i id="Like-{{article.pk}}" class="fa-regular fa-heart"></i></button>
           <!-- <input type="submit" value="좋아요" id="like-{{article.pk}}"> -->
         {% endif %}
       </form>
@@ -51,17 +51,26 @@
           const isLiked = response.data.is_liked
           const likeBtn = document.querySelector(`#like-${articleId}`)
           if (isLiked === true) {
-            // likeBtn.value = '좋아요 취소'
-            const iTag = document.createElement('i')
-            iTag.classList.add = "fa-solid fa-heart btn"
+            // likeBtn.value = 'Unlike'
+            likeBtn.setAttribute('type', 'submit')
+            likeBtn.setAttribute('class', 'btn btn p-0')
+            
+            let iTag = document.querySelector(`#Like-${articleId}`)
+            iTag.setAttribute('class', "fa-solid fa-heart btn")
             iTag.setAttribute('style',"color: red;")
-            likeBtn.appendChild(iTag)
-            // likeBtn.innerText = <i class="fa-solid fa-heart btn" style="color: red;"></i>
+
+            console.log('zz')
+            
           } else {
-            // likeBtn.value = '좋아요'
-            iTag.classList.add = "fa-regular fa-heart"
-            likeBtn.appendChild(iTag)
-            // likeBtn.innerText = <i class="fa-regular fa-heart"></i>
+            // likeBtn.value = 'Like'
+            likeBtn.setAttribute('type', 'submit')
+            likeBtn.setAttribute('class', 'btn btn m-0')
+
+            let iTag = document.querySelector(`#Like-${articleId}`)
+            iTag.setAttribute('class', "fa-regular fa-heart")
+            iTag.setAttribute('style',"color: black;")
+
+            console.log('z')
           }
           const likesCountTag = document.querySelector(`#likes-count-${articleId}`)
           const likesCount = response.data.likes_count
