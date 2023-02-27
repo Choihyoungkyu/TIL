@@ -5,18 +5,28 @@ export default function NavBar() {
   const router = useRouter();
   return (
     <nav>
-      <Link
-        href="/"
-        style={{ color: router.pathname === "/" ? "red" : "blue" }}
-      >
+      <Link href="/" className={router.pathname === "/" ? "active" : "blue"}>
         Home
       </Link>
       <Link
         href="/about"
-        style={{ color: router.pathname === "/about" ? "red" : "blue" }}
+        className={router.pathname === "/about" ? "active" : "blue"}
       >
         About
       </Link>
+      <style jsx>
+        {`
+          nav {
+            background-color: tomato;
+          }
+          a {
+            text-decoration: none;
+          }
+          .active {
+            color: yellow;
+          }
+        `}
+      </style>
     </nav>
   );
 }
