@@ -51,7 +51,7 @@ regexp.test(target);	// true
 ```js
 // RegExp 생성자 함수를 사용하면 동적으로 사용 가능
 const count = (str, char) => (str.match(new RegExp(char, 'gi')) ?? []).length;
-
+// => /char/gi
 count('Is this all there is?', 'is');	// 3
 count('Is this all there is?', 'xx');	// 0
 ```
@@ -221,6 +221,7 @@ target.match(regExp);	// ["A", "AA", "A", "AAA"]
 const target = 'color colour';
 
 // 'colo' 다음 'u'가 최대 한 번(0번 포함) 이상 반복되는 문자열을 전역 검색
+// 있어도 되고 없어도 되도록 만들어줌
 const regExp = /colou?r/g;
 
 target.match(regExp);	// ["color", "colour"]
@@ -342,27 +343,40 @@ regExp.test(target);	// true
 
 
 
-#### 자주 사용하는 정규표현식 (p.589)
+#### 프로젝트에서 사용한 코드
 
-**1. 특정 단어로 시작하는지 검사**
+```tsx
+// 정규표현식을 사용하여 언급한 사람들 추출
 
-
-
-
-
-
-
-
-
-
+const handleUpdateComment = async () => {
+    const mentionNickname = null;
+    const mentionRegex = /@[^\s@]+/g;
+    const mentionNicknameList = content.match(mentionRegex) || []; // 언급할 대상들
+};
+```
 
 
 
+```tsx
+// 문자열을 화면에 표시할 때 정규표현식을 이용해 "@" 부분을 다 멘션으로 처리해서 하이라이팅 + 링크 기능 추가
 
-
-
-
-
-
-
+<div className={`${styles.introduction} `}>
+    {content.split(/(@[^\s@]+)/g).map((v: string, index: number) => {
+        if (v.match(/@[^\s@]+/g)) {
+            return (
+                <span key={index}>
+                    <Link href={`/user/feed/${v.substring(1)}`} style={{ color: 'blue', whiteSpace: 'pre-line' }}>
+                        {v}
+                    </Link>
+                </span>
+            );
+        }
+        return (
+            <span key={index} style={{ whiteSpace: 'pre-line' }}>
+                {v}
+            </span>
+        );
+    })}
+</div>
+```
 
