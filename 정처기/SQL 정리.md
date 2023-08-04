@@ -66,7 +66,7 @@ CREATE OR REPLACE VIEW 뷰이름 AS 조회쿼리;
 #### CREATE INDEX
 
 ```sql
-CREATE [UNIQUE] INDEX 인덱스명 ON 테이블명(컬럼명1, 컬럼명2, ...);
+CREATE [UNIQUE] INDEX 인덱스명 ON 테이블명 (컬럼명1, 컬럼명2, ...);
 ```
 
 - 인덱스를 생성하는 명령
