@@ -2,7 +2,51 @@
 
 ---
 
+### Annotation Summary
 
+| Annotation - 1   | Description                                                  |
+| ---------------- | ------------------------------------------------------------ |
+| `@Configuration` | Indicates that a class declares one or more `@Bean` methods and may be processed by the Spring container to generate bean definitions |
+| `@ComponentScan` | Define specific packages to scan for components. If specific packages are not defined, scanning will occur from the package of the class that declares this annotation |
+| `@Bean`          | Indicates that a method produces a bean to be managed by the Spring container |
+| `@Component`     | Indicates that an annotated class is a "component"           |
+| `@Service`       | Specialization of `@Component` indicating that an annotated class has business logic |
+| `@Controller`    | Specialization of `@Component` indicating that an annotated class is a "Controller" (e.g. a web controller). Used to define controllers in your web applications and REST API |
+| `@Repository`    | Specialization of `@Component` indicating that an annotated class is used to retrieve and/or manipulate data in a database |
+
+| Annotation - 2                                           | Description                                                  |
+| -------------------------------------------------------- | ------------------------------------------------------------ |
+| `@Primary`                                               | Indicates that a bean should be given preference when multiple candidates are qualified to autowire a single-valued dependency |
+| `@Qualifier`                                             | Used on a field or parameter as a qualifier for candidate beans when autowiring |
+| `@Lazy`                                                  | Indicates that a bean has to be lazily initialized. Absense of `@Lazy` annotation will lead to eager initialization |
+| `@Scope(value= ConfigurableBeanFactory.SCOPE_PROTOTYPE)` | Defines a bean to be a prototype - a new instance will be created every time you refer to the bean. Default scope is singleton - one instance per IOC container |
+
+| Annotation - 3   | Description                                                  |
+| ---------------- | ------------------------------------------------------------ |
+| `@PostConstruct` | Identifies the method that will be executed after dependency injection is done to perform any initialization |
+| `@PreDestroy`    | Identifies the method that will receive the callback notification to signal that the instance is in the process of being removed by the container. Typically used to release resources that it has been holding. |
+| `@Named`         | Jakarta Contexts & Dependency Injection (CDI) Annotation similar to `@Component` |
+| `@Inject`        | Jakarta Contexts & Dependency Injection (CDI) Annotation similar to `@Autowired` |
+
+
+
+### Spring Concepts Summary
+
+| Concept               | Description                                                  |
+| --------------------- | ------------------------------------------------------------ |
+| Dependency Injection  | Identify beans, their cependencies and wire them together (provides IOC - Inversion of Control) |
+| Constructor Injection | Dependencies are set by creating the Bean using its Constructor |
+| Setter Injection      | Dependencies are set by calling setter methods on your beans |
+| Field Injection       | No setter or constructor. Dependency is injected using reflection |
+| IOC Container         | Spring IOC Context that manages Spring beans & their lifecycle<br /> (Spring IOC Container의 유형은 두 가지 : Bean Factory, Application Context) |
+| Bean Factory          | Basic Spring IOC Container                                   |
+| Application Context   | Advanced Spring IOC Container with enterprise-specific features<br />- Easy to use in web applications with internationalization features and good intergration with Spring AOP |
+| Spring Beans          | Objects managed by Spring                                    |
+| Auto-wiring           | Process of wiring in dependencies for a Spring Bean          |
+
+
+
+---
 
 ### Lazy Initialization(지연 초기화)
 
@@ -271,3 +315,89 @@ try (var context = new ClassPathXmlApplicationContext("contextConfiguration.xml"
 
 ---
 
+### Spring Stereotype Annotations - @Component & more...
+
+- `@Component` - Generic annotation applicable for any class
+  - **Base** for all Spring Stereotype Annotations
+  - **Specializations** of `@Component`:
+    - `@Service` 
+      - Indicates that an annotated class has business logic
+      - 보통 어노테이션한 클래스에 비즈니스 논리가 있음을 나타냄
+    - `@Controller`
+      - Indicates that an annotated class is a "Controller" (e.g. a web controller)
+      - Used to define controllers in your web applications and REST API
+      - 웹 애플리케이션과 REST API에서 컨트롤러를 정의하는 데 사용됨
+    - `@Repository`
+      - Indicates that an annotated class is used to retrieve and/or manipulate data in a database
+      - Bean이 데이터베이스와 통신하는 경우, 데이터를 저장하거나 검색하거나 조작하는 경우 사용됨
+- What should you use?
+  - (**Recommendation**) Use the most specific annotation possible
+  - **Why?**
+    - By using a specific annotation, you are giving more information to the framework about your intentions.
+    - You can use AOP at a later point to add additional behavior
+      - ex. For `@Repository`, Spring automatically wires in JDBC Exception translation features
+
+
+
+---
+
+### Spring Big Picture - Framework, Modules and Projects
+
+- **Spring Core** : IOC Container, Dependency Injection, Auto Wiring, ...
+  - These are the fundamental building blocks to :
+    - Building web applications
+    - Creating REST API
+    - Implementing authentication and authorization
+    - Talking to a database
+    - Integrating with other systems
+    - Writing great unit tests
+- Let's now get a Spring Big Picture:
+  - **Spring Framework**
+  - **Spring Modules**
+  - **Spring Projects**
+
+
+
+### Spring Big Picture - Framework and Modules
+
+- Spring Framework containses multiple **Spring Modules**:
+  - **Fundamental Features** : Core (IOC Container, Dependency Injection, Auto Wiring, ...)
+  - **Web** : Spring MVC etc (Web applications, REST API)
+  - **Web Reactive** : Spring WebFlux etc
+  - **Data Access** : JDBC, JPA etc
+  - **Integration** : JMS etc
+  - **Testing** : Mock Objects, Spring MVC Test etc
+- **No Dumb Question** : Why is Spring Framework divided into Modules?
+  - Flexibility(유연성) : Each application can choose modules they want to make use of
+  - They do not need to make use of everything in Spring framework!
+
+
+
+### Spring Big Picture - Spring Projects
+
+- Application architectures evolve continuously
+  - Web > REST API > Microservices > Cloud > ...
+- Spring evolves through **Spring Projects** :
+  - **First Project** : Spring Framework
+  - **Spring Security** : Secure your web application or REST API or microservice
+  - **Spring Data** : Integrate the same way with different types of databases : NoSQL and Relational
+  - **Spring Integration** : Address challenges with integration with other applications
+  - **Spring Boot** : Popular framework to build microservices
+  - **Spring Cloud** : Build cloud native applications
+
+
+
+### Spring Big Picture - Framework, Modules and Projects
+
+- **Hierarchy** : Spring Projects > Spring Framework > Spring Modules
+- Why is Spring Eco system popular?
+  - **Loose Coupling** : Spring manages creation and wiring of beans and dependencies
+    - Makes it easy to build loosely coupled applications
+    - Make writing unit tests easy! (Spring Unit Testing)
+  - **Reduced Boilerplate Code** : Focus on Business Logic
+    - ex. No need for exception handling in each method!
+      - All Checked Exceptions are converted to Runtime or Unchecked Exceptions
+  - **Architectural Flexibility** : Spring Modules and Projects
+    - You can pick and choose which ones to use (You DON'T need to use all of them!)
+  - **Evolution with Time** : Micreservices and Cloud
+    - Spring Boot, Spring Cloud etc!
