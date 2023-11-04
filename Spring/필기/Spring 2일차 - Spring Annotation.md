@@ -34,7 +34,7 @@
 
 | Concept               | Description                                                  |
 | --------------------- | ------------------------------------------------------------ |
-| Dependency Injection  | Identify beans, their cependencies and wire them together (provides IOC - Inversion of Control) |
+| Dependency Injection  | Identify beans, their dependencies and wire them together (provides IOC - Inversion of Control) |
 | Constructor Injection | Dependencies are set by creating the Bean using its Constructor |
 | Setter Injection      | Dependencies are set by calling setter methods on your beans |
 | Field Injection       | No setter or constructor. Dependency is injected using reflection |
