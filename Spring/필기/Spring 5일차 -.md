@@ -276,3 +276,197 @@ public class LoginController {
 
    - todo.jsp
 
+
+
+### JSP Fragment
+
+- jspf 파일을 만들어서 컴포넌트로 사용 가능
+- `<%@ include file="경로" %>` 로 임포트해서 사용 가능
+
+```java
+// listTodos.jsp
+<%@ include file="common/navigation.jspf" %>
+```
+
+```java
+// navigation.jspf
+<nav class="navbar navbar-expand-md navbar-light bg-light mb-3 p-1">
+	<a class="navbar-brand m-1" href="https://courses.in28minutes.com">in28minutes</a>
+	<div class="collapse navbar-collapse">
+		<ul class="navbar-nav">
+			<li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+			<li class="nav-item"><a class="nav-link" href="/list-todos">Todos</a></li>
+		</ul>
+	</div>
+	<ul class="navbar-nav">
+		<li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
+	</ul>	
+</nav>
+```
+
+
+
+### Spring Security
+
+- pom.xml에 다음과 같이 추가
+
+```xml
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+```
+
+- Spring Security Configuration 파일 만들기
+  - Bean을 직접 만들어야 됨
+
+```java
+@Configuration
+public class SpringSecurityConfiguration {
+	// LDAP or Database
+	// In Memory --> 아래는 이 방법으로 만든거
+	
+	@Bean
+	public InMemoryUserDetailsManager createUserDetailsManager() {
+		// 지역변수로 pw input을 encoding 하기 
+		Function<String, String> passwordEncoder
+				= input -> passwordEncoder().encode(input);
+				
+		// user 객체 생성 후 build 하기
+		UserDetails userDetails = User.builder()
+									.passwordEncoder(passwordEncoder)
+									.username("in28minutes")
+									.password("dummy")
+									.roles("USER", "ADMIN")
+									.build();
+		
+		return new InMemoryUserDetailsManager(userDetails);
+	}
+	
+  // 비밀번호 인코딩 함수
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+}
+```
+
+- Spring Security 에서 값을 가지고 오는 방법 : `SecurityContextHolder.getContext().getAuthentication()`
+
+```java
+private String getLoggedInUsername(ModelMap model) {
+  Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+  return authentication.getName();
+}
+```
+
+
+
+### Connect the data using JPA
+
+- Repository Interface 파일 생성
+- Create, Update - `save()`
+- Read - `findBy..()`
+- Delete - `deleteBy..()`
+
+```java
+// TodoRepository.java
+package com.in28minutes.springboot.mifirsewebapp.todo;
+
+import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface TodoRepository extends JpaRepository<Todo, Integer>{
+	public List<Todo> findByUsername(String username);
+}
+```
+
+```java
+// TodoController.java
+@Controller
+public class TodoController {
+  private TodoRepository todoRepository;
+  
+  public TodoController(TodoRepository todoRepository) {
+    super();
+    this.todoRepository = todoRepository;
+  }
+  
+  // Spring Security에서 값 가져오기
+  public String getLoggedInUsername(ModelMap model) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    return authentication.getName();
+  }
+  
+  // 모든 할 일 목록 가져오기
+  @RequestMapping(value="list-todos", method=RequestMethod.GET)
+  public String listAllTodos(ModelMap model) {
+    String username = getLoggedInUsername(model);
+    
+    List<Todo> todos = todoRepository.findByUsername(username);	// ID가 아닌 값으로 찾을 때는 Repository에 따로 메소드를 등록해야됨
+    model.addAttribute("todos", todos);
+    
+    return "listTodos";
+  }
+}
+```
+
+
+
+### Spring Boot Auto Configuration Magic - Data JPA
+
+- We added Data JPA and H2 dependencies:
+  - Spring Boot Auto Configuration does some magic:
+    - Initialize JPA and Spring Data JPA frameworks
+    - Launch an in memory database (H2)
+    - Setup connection from App to in-memory database
+    - Launch a few scripts at startup (ex. data.sql)
+- **Remember** - H2 is in memory database
+  - Does NOT persist data
+  - Great for learning
+  - BUT NOT so great for production
+
+
+
+### Connect the data using MySQL
+
+- Docker에 MySQL 설치하기
+
+```shell
+docker run --detach 
+--env MYSQL_ROOT_PASSWORD=dummypassword 
+--env MYSQL_USER=todos-user 
+--env MYSQL_PASSWORD=dummytodos 
+--env MYSQL_DATABASE=todos 
+--name mysql 
+--publish 3306:3306 
+mysql:8-oracle
+```
+
+- application.properties 작성하기
+
+```properties
+# 코드가 실행된 후 테이블이 만들어져서 에러가 발생하는 것을 방지
+spring.jpa.defer-datasource-initialization=true
+
+# true로 설정시 쿼리가 다 로그에 남음
+spring.jpa.show-sql=true
+
+# 데이터베이스 주소
+spring.datasource.url=jdbc:mysql://localhost:3306/todos
+
+# 데이터베이스 주인(?) 이름(ID)
+spring.datasource.username=todos-user
+
+# 데이터베이스 비밀번호
+spring.datasource.password=dummytodos
+
+# JPA의 Hibernate 구현체를 사용해서 대화하겠다고 설정
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
+
+# 프로젝트 실행시 MySQL에 있는 값들 자동으로 생성
+spring.jpa.hibernate.ddl-auto=update
+```
+
+
+
