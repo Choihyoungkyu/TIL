@@ -468,5 +468,15 @@ spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
 spring.jpa.hibernate.ddl-auto=update
 ```
 
+- Shell 에서 MySQL 확인하기
+
+```shell
+\connect todos-user@localhost:3306		# mysql 서버의 todos-user(MYSQL_USER)에 접속하기
+
+\use todos														# 스키마 연결 (MYSQL_DATABASE)
+
+\sql																	# 해당 스키마에서 sql 구문 사용한다고 선언
+```
+
 
 
