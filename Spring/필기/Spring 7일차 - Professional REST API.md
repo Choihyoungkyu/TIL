@@ -223,15 +223,282 @@ public EntityModel<User> retrieveUser(@PathVariable int id) {
 
 
 
+### Customizing REST API Response - Filtering and more..
+
+- **Serialization** : Covert object to steam (ex: JSON)
+  - Most popular JSON Serialization in Java : Jackson
+- How about customizing the REST API response returned by Jackson framework?
+  1. Customize field names in response
+     - `@JSONProperty`
+  2. Return only selected fields
+     - **Filtering** (ex: Filter out Password)
+     - **Two types** :
+       - **Static Filtering** : Same filtering for a bean across different REST API
+         - `@JsonIgnoreProperties`, `@JsonIgnore`
+       - **Dynamic Filtering** : Customize filtering for a bean for specific REST API
+         - `@JsonFilter` with FilterProvider
 
 
 
+### Static Filtering
+
+- `@JsonIgnoreProperties({"field1", "field2", ...})` : Class Annotation
+- `@JsonIgnore` : Field Annotation
+
+```java
+// SomeBean.java
+@JsonIgnoreProperties("field1")		// field1을 JSON 응답에 나타내지 않음
+public class SomeBean {
+	private String field1;
+	@JsonIgnore
+	private String field2;	// field2를 JSON 응답에 나타내지 않음
+	private String field3;
+	...
+}
+```
+
+```java
+// FilteringController.java
+@RestController
+public class FilteringController {
+	
+	@GetMapping("/filtering")
+	public SomeBean filtering() {
+		return new SomeBean("value1", "value2", "value3");
+	}
+  // field3만 나옴 (위에서 field1, field2는 나오지 않도록 해놨으므로)
+	
+	@GetMapping("/filtering-list")
+	public List<SomeBean> filteringList() {
+		return Arrays.asList(new SomeBean("value1", "value2", "value3"),
+				new SomeBean("value4", "value5", "value6"));
+	}
+}
+```
 
 
 
+### Dynamic Filtering
+
+- `@JsonFilter` & Definition filter in controller
+
+```java
+// SomeBean.java
+@JsonFilter("SomeBeanFilter")		// controller에서 정의한 SomeBeanFilter에 맞게 동적 필터링
+public class SomeBean {
+	private String field1;
+	private String field2;
+	private String field3;
+	...
+}
+```
+
+```java
+// FilteringController.java
+@RestController
+public class FilteringController {
+  // 필터 정의 메서드 -> 나중에 Service로 빼면 될듯?
+	private FilterProvider filter(String[] filterList) {
+		SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.filterOutAllExcept(filterList);
+		
+		FilterProvider filters = new SimpleFilterProvider().addFilter("SomeBeanFilter", filter);
+		return filters;
+	}
+	
+  // 아래 로직에서 필터를 정의해서 동적으로 필터링 가능
+	@GetMapping("/filtering")
+	public MappingJacksonValue filtering() {
+		SomeBean someBean = new SomeBean("value1", "value2", "value3");
+		
+		MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(someBean);
+		
+		FilterProvider filters = filter(new String[]{"field1", "field3"});
+		
+		mappingJacksonValue.setFilters(filters);
+		
+		return mappingJacksonValue;
+	}
+	
+  // 여러 개를 반환할때도 적용되고, url이 다를 때 다른 값을 필터링 하도록 설정 가능
+	@GetMapping("/filtering-list")
+	public MappingJacksonValue filteringList() {
+		List<SomeBean> list = Arrays.asList(new SomeBean("value1", "value2", "value3"),
+				new SomeBean("value4", "value5", "value6"));
+		
+		MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(list);
+		
+		FilterProvider filters = filter(new String[] {"field2", "field3"}); 
+		
+		mappingJacksonValue.setFilters(filters);
+		
+		return mappingJacksonValue;
+	}
+}
+```
 
 
 
+### Get Production - ready with Spring Boot Actuator
+
+- **Spring Boot Actuator** : Provides Spring Boot's production-ready features
+  - Monitor and manage your application in your production
+- **Spring Boot Starter Actuator** : Starter to add Spring Boot Actuator to your application
+  - **spring-boot-starter-actuator**
+- Provides a number of endpoints :
+  - **beans** - Complete list of Spring beans in your app
+  - **health** - Application health information
+  - **metrics** - Application metrics
+  - **mappings** - Details around Request Mappings
+
+```xml
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+```
+
+- http://localhost:8080/actuator
+- how to see all features?
+
+```properties
+# application.properties
+management.endpoints.web.exposure.include=*
+```
 
 
+
+### Explore REST API using HAL Explorer
+
+1. **HAL (JSON Hypertext Application Language)**
+   - Simple format that gives a consistent and easy way to hyperlink between resources in your API
+2. **HAL Explorer**
+   - An API explorer for RESTful Hypermedia APIs using HAL
+   - Enable your non-technical teams to play with APIs
+3. **Spring Boot HAL Explorer**
+   - Auto-configures HAL Explorer for Spring Boot Projects
+
+```xml
+<dependency>
+  <groupId>org.springframework.data</groupId>
+  <artifactId>spring-data-rest-hal-explorer</artifactId>
+</dependency>
+```
+
+
+
+### Connection between user and post
+
+```java
+// User.java
+@Entity(name="user_details")
+public class User {
+  @Id
+  @GeneratedValue
+  private Integer id;
+  
+  @JsonProperty("user_name")
+  private String name;
+  
+  @JsonProperty("birth_date")
+  private LocalDate birthDate;
+  
+  @OneToMany(mappedBy = "user")
+  @JsonIgnore
+  private List<Post> posts
+}
+
+// USER_DETAILS -> Table
+// fields : ID, BIRTH_DATE, NAME
+```
+
+```java
+// Post.java
+@Entity
+public class Post {
+  @Id
+  @GeneratedValue
+  private Integer id;
+  
+  private String description;
+  
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JsonIgnore
+  private User user;
+}
+
+// POST -> Table
+// fields : ID, DESCRIPTION, USER_ID	=>	USER_ID 필드가 자동으로 생성됨
+```
+
+- Retrieve All Posts For User
+
+```java
+// UserJpaResource.java
+@GetMapping("/jpa/users/{id}/posts")
+public List<Post> retrievePostsForUser(@PathVariable int id) {
+  // 1. find user
+  Optional<User> user = repository.findById(id);
+
+  // 2. null check
+  if(user.isEmpty()) {
+    throw new UserNotFoundException("id : " + id);
+  }
+
+  // 3. return all posts (.getPosts() -> defined by setter)
+  return user.get().getPosts();
+}
+```
+
+
+
+### Spring Security
+
+- Basic Setting
+
+```xml
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+```
+
+```properties
+spring.security.user.name=username
+spring.security.user.password=password
+```
+
+- Spring Security 원리
+  - 요청을 보낼 때마다 Spring Security가 해당 요청을 가로챔
+  - 가로챈 요청에 대해 일련의 필터를 실행 (Filter Chains)
+    1. All requests should be authenticated
+    2. If a request is not authenticated, a web page is shown
+    3. CSRF 필터 때문에 POST, PUT 요청에 영향을 주게 됨
+- 기존 필터 체인을 오버라이드하려면 체인 전체를 다시 정의해야함
+  - Configuration : Spring 설정 파일
+  - Bean FilterChain : 필터 체인을 정의할 Bean
+
+```java
+// SpringSecurityConfiguration.java
+import static org.springframework.security.config.Customizer.withDefaults;
+
+@Configuration
+public class SpringSecurityConfiguration {
+	
+	@Bean
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//		1. All requests should be authenticated -> 인증이 없으면 페이지 자체를 안띄움
+		http.authorizeHttpRequests(
+				auth -> auth.anyRequest().authenticated()
+			);
+		
+//		2. If a request is not authenticated, a web page is shown -> 로그인 페이지 팝업 띄우기
+		http.httpBasic(withDefaults());
+		
+//		3. CSRF 필터 때문에 POST, PUT 요청에 영향을 주게 됨 -> disable
+		http.csrf().disable();
+		
+		return http.build();
+	}
+}
+```
 
