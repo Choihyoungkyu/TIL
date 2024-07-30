@@ -229,6 +229,26 @@ public class ExampleTypeHandler extends BaseTypeHandler<String> {
 - TypeHandler를 이용한 해결방법
 
   ```java
+  package com.pure.test.typehandler;
+   
+   
+  /**
+   * 이메일 암호화 Custom Type Handler
+   * 
+   * @author Pure
+   *
+   */
+  public class EmailCipherTypeHandler extends AbstractCipherTypeHandler {
+      
+      /* (non-Javadoc)
+       * @see com.pure.test.typehandler.AbstractCipherTypeHandler#isCipher()
+       */
+      @Override
+      protected final boolean isCipher() {
+          return true;
+      }
+  }
+  
   ```
-
+  
   
